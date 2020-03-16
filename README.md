@@ -1,21 +1,20 @@
 # zcs-zpush
 This repository is source for integrating Zimbra Single Server and Z-Push + Zimbra Backend to achieve ActiveSync on Zimbra OSE.
 
-# Integrating Zimbra and Z-push on CentOS 7
+# Integrating Zimbra and Z-push on Ubuntu 18.04 and Zimbra 8.8.15+
 
 Install dependecies
 
 ```bash
-yum install epel-release -y
-yum update -y
-yum upgrade -y
-yum install git php-cli php-soap php-process php-mbstring -y
+apt update
+apt upgrade -y
+apt install git php7.2-cli php7.2-soap php7.2-mbstring -y
 ```
 
 Clone repo
 
 ```bash
-git clone https://github.com/imanudin11/zcs-zpush.git
+git clone https://github.com/linuxcuba/zcs-zpush.git
 ```
 
 Create folder for log
@@ -63,8 +62,8 @@ chown zimbra.zimbra /opt/zimbra/jetty/etc/jetty.xml.in
 Replace php.ini
 
 ```bash
-cp /etc/php.ini /etc/php.ini.backup
-cp php.ini /etc/php.ini
+cp /etc/php7.2/php.ini /etc/php.ini.backup
+cp php.ini /etc/php7.2/php.ini
 ```
 
 Restart Zimbra Mailbox
