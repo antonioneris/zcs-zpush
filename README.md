@@ -62,8 +62,8 @@ chown zimbra.zimbra /opt/zimbra/jetty/etc/jetty.xml.in
 Replace php.ini
 
 ```bash
-cp /etc/php7.2/php.ini /etc/php.ini.backup
-cp php.ini /etc/php7.2/php.ini
+cp /etc/php7.2/cgi/php.ini /etc/php7.2/cgi/php.ini.backup
+cp php.ini /etc/php7.2/cgi/php.ini
 ```
 
 Restart Zimbra Mailbox
