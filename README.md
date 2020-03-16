@@ -14,7 +14,7 @@ apt install git php7.2-cli php7.2-soap php7.2-mbstring -y
 Clone repo
 
 ```bash
-git clone https://github.com/linuxcuba/zcs-zpush.git
+git clone https://github.com/LinuxCuba/zcs-zpush.git
 ```
 
 Create folder for log
