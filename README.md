@@ -7,8 +7,8 @@ Install dependecies
 
 ```bash
 apt update
-apt upgrade -y
-apt install git php7.2-cli php7.2-soap php7.2-mbstring php7.2-curl -y
+apt upgrade
+apt install git php7.2-cli php7.2-cgi php7.2-soap php7.2-mbstring php7.2-curl -y
 ```
 
 Clone repo
@@ -62,8 +62,8 @@ chown zimbra.zimbra /opt/zimbra/jetty/etc/jetty.xml.in
 Replace php.ini
 
 ```bash
-cp /etc/php7.2/cgi/php.ini /etc/php7.2/cgi/php.ini.backup
-cp php.ini /etc/php7.2/cgi/php.ini
+cp /etc/php/7.2/cgi/php.ini /etc/php/7.2/cgi/php.ini.backup
+cp php.ini /etc/php/7.2/cgi/php.ini
 ```
 
 Restart Zimbra Mailbox
