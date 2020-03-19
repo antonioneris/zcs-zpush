@@ -27,7 +27,7 @@
  *  Default settings
  */
     // Defines the default time zone, change e.g. to "Europe/London" if necessary
-    define('TIMEZONE', '');
+    define('TIMEZONE', 'America/Havana');
 
     // Defines the base path on the server
     define('BASE_PATH', dirname($_SERVER['SCRIPT_FILENAME']). '/');
@@ -81,7 +81,8 @@
  *                            memcached server before (it won't be installed by z-push-ipc-memcached).
  *  IpcWincacheProvider     - for windows systems.
  */
-    define('IPC_PROVIDER', '');
+//    define('IPC_PROVIDER', '');
+    define('IPC_PROVIDER', 'IpcMemcachedProvider');
 
 /**********************************************************************************
  *  Logging settings
@@ -142,7 +143,7 @@
  *  Mobile settings
  */
     // Device Provisioning
-    define('PROVISIONING', true);
+    define('PROVISIONING', false);
 
     // This option allows the 'loose enforcement' of the provisioning policies for older
     // devices which don't support provisioning (like WM 5 and HTC Android Mail) - dw2412 contribution
@@ -201,7 +202,7 @@
     // MS Outlook 2013+ request up to 512 items to accelerate the sync process.
     // If you detect high load (also on subsystems) you could try a lower setting.
     // max: 512 - value used if mobile does not limit amount of items
-    define('SYNC_MAX_ITEMS', 512);
+    define('SYNC_MAX_ITEMS', 5);
 
     // The devices usually send a list of supported properties for calendar and contact
     // items. If a device does not includes such a supported property in Sync request,
@@ -276,7 +277,7 @@
  *  Backend settings
  */
     // the backend data provider
-    define('BACKEND_PROVIDER', '');
+    define('BACKEND_PROVIDER', 'BackendZimbra');
 
 /**********************************************************************************
  *  Search provider settings
