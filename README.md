@@ -8,7 +8,7 @@ Install dependecies
 ```bash
 apt update
 apt upgrade
-apt install git php7.2-cli php7.2-cgi php7.2-soap php7.2-mbstring php7.2-curl -y
+apt install git php7.2-cli php7.2-cgi php7.2-soap php7.2-mbstring php7.2-curl php7.2-xml php-memcached -y
 ```
 
 Clone repo
