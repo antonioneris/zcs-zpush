@@ -139,6 +139,7 @@ define('IMAP_FROM_SQL_PASSWORD', '');
 define('IMAP_FROM_SQL_OPTIONS', serialize(array(PDO::ATTR_PERSISTENT => true)));
 define('IMAP_FROM_SQL_QUERY', "select first_name, last_name, mail_address from users where mail_address = '#username@#domain'");
 define('IMAP_FROM_SQL_FIELDS', serialize(array('first_name', 'last_name', 'mail_address')));
+define('IMAP_FROM_SQL_EMAIL', '#mail_address');
 define('IMAP_FROM_SQL_FROM', '#first_name #last_name <#mail_address>');
 define('IMAP_FROM_SQL_FULLNAME', '#first_name #last_name');
 
@@ -156,6 +157,7 @@ define('IMAP_FROM_LDAP_PASSWORD', 'password');
 define('IMAP_FROM_LDAP_BASE', 'dc=zpush,dc=org');
 define('IMAP_FROM_LDAP_QUERY', '(mail=#username@#domain)');
 define('IMAP_FROM_LDAP_FIELDS', serialize(array('givenname', 'sn', 'mail')));
+define('IMAP_FROM_LDAP_EMAIL', '#mail');
 define('IMAP_FROM_LDAP_FROM', '#givenname #sn <#mail>');
 define('IMAP_FROM_LDAP_FULLNAME', '#givenname #sn');
 
@@ -193,7 +195,8 @@ $imap_smtp_params = array();
 // IMPORTANT: To use SSL you must use PHP 5.1 or later, install openssl libs and use ssl:// within the host variable
 // IMPORTANT: To use SSL with PHP 5.6 you should set verify_peer, verify_peer_name and allow_self_signed
 //$imap_smtp_params = array('host' => 'ssl://localhost', 'port' => 465, 'auth' => true, 'username' => 'imap_username', 'password' => 'imap_password');
-
+// If you want to use STARTTLS when the server is supporting it, you just need to enable authentication on a non SSL host variable.
+//$imap_smtp_params = array('host' => 'localhost', 'port' => 587, 'auth' => true, 'username' => 'imap_username', 'password' => 'imap_password');
 
 
 // If you are using IMAP_SMTP_METHOD = mail or sendmail and your sent messages are not correctly displayed you can change this to "\n".
@@ -208,3 +211,8 @@ define('SYSTEM_MIME_TYPES_MAPPING', '/etc/mime.types');
 
 // Use BackendCalDAV for Meetings. You cannot hope to get that functionality working without a caldav backend.
 define('IMAP_MEETING_USE_CALDAV', false);
+
+// If your IMAP server allows authenticating via GSSAPI, php-imap will not fall back properly to other authentication
+// methods and you will be unable to log in. Uncomment the following line to disable that authentication method.
+// Multiple methods can be specified as a comma-separated string.
+// define('IMAP_DISABLE_AUTHENTICATOR', 'GSSAPI');

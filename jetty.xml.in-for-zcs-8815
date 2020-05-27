@@ -517,7 +517,7 @@
 		    <Set name="replacement">/service/user</Set>
 		</New>
 	    </Arg>
-        </Call>  
+        </Call>
         <Call name="addRule">
 	    <Arg>        
 		<New class="org.eclipse.jetty.rewrite.handler.RewritePatternRule">
@@ -542,7 +542,7 @@
 		</New>
 	    </Arg>
         </Call>
-        <!-- 
+        <!--
           Allow only certauth URL on the SSL client cert port.
           If the URl does not match the regex, return http 403.
           Put this rule after the legacy rules (addRewriteRule) so this rule

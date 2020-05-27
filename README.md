@@ -7,8 +7,7 @@ Install dependecies
 
 ```bash
 apt update
-apt upgrade
-apt install git php7.2-cli php7.2-cgi php7.2-soap php7.2-mbstring php7.2-curl -y
+apt install git php7.2-cli php7.2-cgi php7.2-soap php7.2-mbstring php7.2-curl php7.2-xml php-memcached -y
 ```
 
 Clone repo
@@ -42,13 +41,6 @@ Save php script on /usr/bin
 ```bash
 cp php-cgi-fix.sh /usr/bin/php-cgi-fix.sh
 chmod +x /usr/bin/php-cgi-fix.sh
-```
-
-Change publicHostname domain on your Zimbra into localhost
-
-```bash
-su - zimbra -c 'zmprov md yourzimbradomain.tld zimbraPublicServiceHostname localhost'
-su - zimbra -c 'zmprov md yourzimbradomain.tld zimbraPublicServiceProtocol https'
 ```
 
 Backup and replace jetty.xml.in
