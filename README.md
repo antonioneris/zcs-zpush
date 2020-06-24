@@ -14,6 +14,7 @@ Clone repo
 
 ```bash
 git clone https://github.com/LinuxCuba/zcs-zpush.git
+cd zcs-zpush
 ```
 
 Create folder for log
