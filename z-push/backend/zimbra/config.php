@@ -31,7 +31,7 @@
 //    define('ZIMBRA_URL', 'http://zimbraServerName');
 //    define('ZIMBRA_URL', 'https://zimbraServerName');
 //    define('ZIMBRA_URL', 'http://127.0.0.1');  
-//    define('ZIMBRA_URL', 'https://127.0.0.1');  
+    define('ZIMBRA_URL', 'https://127.0.0.1');  
 
     // By default the zimbra backend does not enforce certificate validation for connections 
     // to zimbra as many people run zimbra FOSS using self-signed certificates. If verification 
