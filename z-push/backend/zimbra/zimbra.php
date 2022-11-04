@@ -1,8 +1,8 @@
 <?php
-$GLOBALS['revision'] = "69"; // Used to output the script version to the debug log
+$GLOBALS['revision'] = "71"; // Used to output the script version to the debug log
 /***********************************************
 * File          :   zimbra.php
-* Revision      :   69 (8-Jan-2020)
+* Revision      :   71 (01-Oct-2021)
 * Project       :   Z-Push Zimbra Backend
 *                   https://sourceforge.net/projects/zimbrabackend
 * Description   :   A backend for Z-Push to use with the Zimbra Collaboration Suite,
@@ -13,7 +13,24 @@ $GLOBALS['revision'] = "69"; // Used to output the script version to the debug l
 *                   Mathias Kolb
 *                   Julien Laurent
 *
-* Changes       :   Changes Made To Revision 69: z-push-2 version ONLY
+* Changes       :   Changes Made To Revision 71: z-push-2 version ONLY
+*                     - Removed zimbra specific version of include file z_RTF.php
+*                     - Don't output "" for empty Task dates and reminderset
+*                     - Changed reporting of error mail.NO_SUCH_WAITSET to LOGLEVEL_DEBUG
+*                     - Replaced all references to debugLog with ZLog::Write(LOGLEVEL_DEBUG,
+*                     - New override setting ZIMBRA_DELETESASMOVES added
+*                     - Mail_Mime files mime.php and mimepart.php updated to release 1.10.10
+*                     - Don't fail recurrence comparison on firstdayofweek value 
+*                     - Don't fail recurrence comparison on until value if less than a day differece 
+*                     - Don't fail recurrence comparison on until value if not present in input 
+*                     - Removed use of each() in timezone matching for PHP 8 compatibility
+*
+*                   Changes Made To Revision 70: z-push-2 version ONLY
+*                     - Workaround Z-Push issue in SmartForward/SmartReply from shared folder
+*                     - Add 2 to continue statement in GetNextMessageBlock for Contacts
+*                     - Throw AuthenticationRequiredException for AUTH failures
+*
+*                   Changes Made To Revision 69: z-push-2 version ONLY
 *                     - Added descriptive WARN message for unavailable shared folder
 *                     - In isZimbraObjectInSyncInterval treat no response as false
 *                     - Fix processing of zimbraMailAlias to handle string if exactly one alias
@@ -42,103 +59,6 @@ $GLOBALS['revision'] = "69"; // Used to output the script version to the debug l
 *                     - Check for service.PROXY_ERROR in Login and ChangesSink in multi-server setup 
 *                     - If no Change Token is returned from CreateWaitSet then delay and return
 *                     - Updated comment on FakeOutbox
-*
-*                   Changes Made To Revision 66: z-push-2 version ONLY
-*                     - Use zimbraHttpStreamWrapper class to output MIME body
-*                     - Log ERROR if setting "zimbraAttachmentsBlocked" is "TRUE" 
-*                     - Fix passing header on GetFolder for shared folders generates new session
-*                     - Replace split() with explode() for PHP 7 compatability
-*                     - Refactored GetMessageList() to improve efficiency and reduce memory needed
-*                     - Added config.php options ZIMBRA_SSL_VERIFYPEER and ZIMBRA_SSL_VERIFYHOST
-*                     - Added SSL Verify Peer and Host options to zimbraHttpStreamWrapper class 
-*
-*                   Changes Made To Revision 65: z-push-2 version ONLY
-*                     - Added zimbraHttpStreamWrapper class to provide attachment length to streamer
-*                     - If inv[0] of a Calendar item is an Exception then don't treat it as one
-*                     - Fixed issue with timezone identification where DST is not observed
-*                     - Fixed issue with population of Timezone object in function GetTz()
-*                     - Added handling of Company Main Phone field and nickName
-*                     - Added readonly parameter to Setup() for z-push 2.3 support
-*                     - Updated GetInvIDFromMsgID to retrieve InvID from Message for exceptions
-*                     - Commented out some debug logging
-*                     - Incorrect variable name used in unlink command - Check for orphaned files
-*
-*                   Changes Made To Revision 64: z-push-2 version ONLY
-*                     - Correct path to backend multi-folder support file for autodiscover
-*                     - Identify character encoding of Attachment name and re-use when forwarding
-*                     - Remove closing PHP tag from files 
-*                     - Remove unused experimental function CustomRowCmp
-*                     - Set X-Forwarded-For header to Request::$RemoteAddr if available
-*                     - Added _ua string 'MSFT-WP/10' to the zimbraMultiFolderUAs.php file
-*                     - Save folder permissions in folder array/cache
-*                     - If shared calendar with write permision do not output Organizer 
-*                     - Added _ua string 'Android/6' to the zimbraMultiFolderUAs.php file
-*                     - Add try/catch around call to ZPush::GetDeviceManager()->GetUserAgent()
-*                     - Support new names for Z-Push official ResolveRecipients classes
-*                     - Added code to handle SyncBaseBody as a stream for Z-Push 2.3 and later
-*                     - For deleted recurring meetings set meetingstatus to null - don't unset it
-*                     - For recurring meetings do not output meetingstatus on exceptions in AS 2.5
-*                     - Updated Out-Of-Office to handle different External messages
-*                     - Handle both Autodiscover and Browser Tests when setting the _ua string
-*                     - Allow a default user XML file to be used for all users
-*                     - Add support for category changing to messages and to _cachedMessageLists
-*                     - Renamed constructor function from BackendZimbra to __construct
-*                     - Removed //IGNORE//TRANSLIT from $params array in SendMail
-*                     - Added new config setting 'ZIMBRA_URL_ALLOW_REDIRECT' for OPEN LDAP auth
-*                     - Added SmartFolders flag to cache to detect changes and invalidate cache 
-*                     - Added stats field to _folders for use by new FolderStats functionality
-*                     - Added extra GetFolder calls to get data on Shared Folders for FolderStats
-*                     - Some minor config file settings tidy-up
-*
-*                   Changes Made To Revision 63: z-push-2 version ONLY
-*                     - Ensure meetingstatus is output correctly for main and exceptions
-*                     - Only output attendeestatus to the meeting organizer
-*                     - Change 'Android/5.0' to 'Android/5' as a multi-folder capable _ua string
-*                       in order to match Android/5.1 also 
-*                     - Since z-push 2.2.2 the class StringStreamWrapper has been moved and 
-*                       pre-included from index.php - Check before including it from old location
-*                     - Use new exception constant SyncCollections::HIERARCHY_CHANGED
-*                     - Trap additional HTML errors in SoapRequest to prevent removing content
-*                     - Add checking for HTML errors in functions Logon and ChangesSink
-*                     - Fix ChangeFolder function so create/rename/delete/move all work
-*                     - Changed SendMail filter to keep the original body in more cases
-*                     - Add neg="1" flag to incoming appointment alarms
-*                     - Check for Request class in Logon function before setting client variables
-*                     - Removed reference to Request class from function SoapRequest
-*                     - Reworked Multi-Folder support adding a new configuration file
-*                     - Check for existence of DiffState::RowCmp before calling it
-*                     - Use DeviceManager function GetUserAgent if available
-*
-*                   Changes Made To Revision 62: z-push-2 version ONLY
-*                     - Add 'Android/5.0' as a multi-folder capable _ua string
-*                     - Report actual UserAgent, partial DeviceID, and IP Address in headers 
-*                     - Remove X-Mailer-Connector header from SendMail
-*                     - Output meetingstatus on Exceptions too
-*                     - Output recurrence type 1 for zimbra "DAI"ly appointments that are weekly
-*                     - Added X-Forwarded-For HTTP header to CURL options
-*                     - Wrap subject with htmlspecialchars in 3 places it was overlooked
-*                     - Add check for class ZPushAutodiscover to initial host version check
-*                     - Additional check added to functions GetAttachmentData and
-*                       ItemOperationsGetAttachmentData to allow for Sub-Folder of Shared folder
-*                     - Disable document access if Class SyncDocumentLibraryDocument does not exist
-*                     - Fix in MakeXMLTree for case where tag has no attributes
-*                     - Add required use of new curl_file_create function for PHP 5.5 and later
-*                     - Output the Organizer Name/Email on Appointments if available
-*
-*                   Changes Made To Revision 61: z-push-2 version ONLY
-*                     - Remove forcing CURLOPT_SSLVERSION to 3 (to avoid SSLv3 POODLE issue)
-*                     - Fix SendMailSenderFix email address for condition where no from header
-*                       and full email address used as username
-*                     - Throw exception on SOAP FAULT - service.AUTH_EXPIRED to force re-auth
-*                     - Fix initialization of _userFolderTypeActive based on GetInfoResponse
-*                     - Add ZIMBRA_DISABLE_DOCUMENTS setting to Config File notes below
-*                     - Added function GetUserDetails needed for AutoDiscover feature 
-*                     - Fix check for zimbraPrefFromDisplay and zimbraPrefFromAddress
-*                     - Use configured zimbraPrefFromAddress as sender email address if different 
-*                       from account name
-*                     - Fix clear SendAsNameOverride, SendAsEmailOverride, ServerInviteReply from 
-*                       cache
-*
 *
 *                   Changes Made To Earlier Revisions:
 *                       See "Release Notes.txt"
@@ -269,6 +189,17 @@ $GLOBALS['revision'] = "69"; // Used to output the script version to the debug l
 *                   decision based on the client being Apple or not. 
 *                   (Note: With SmartFolders this setting can be overridden per device - see below)
 *                   define('ZIMBRA_SERVER_INVITE_REPLY', true);
+*
+*
+*                   === To Force Bypassing the Trash Folder for Deletions ===
+*                   By default the zimbra client uses the Trash folder for deletions of mail messages,  
+*                   tasks and contacts. This has always been the same in the ZimbraBackend for consistency.
+*                   For those that would prefer to control the use of the Trash folder from their client a
+*                   new setting ZIMBRA_DELETESASMOVES has been added that can be used to override the 
+*                   default behaviour. The default for this setting is true which means it will move items 
+*                   to the Trash folder when they are deleted on the client. To bypass the Trash folder and
+*                   delete them immediately simply uncomment the next line and set it to false.
+*                   define('ZIMBRA_DELETESASMOVES', false);
 *
 *
 * Feature Disable:  Several users have asked over time if it is possible to turn off Email sync or
@@ -589,10 +520,7 @@ if (!class_exists("Request") && !class_exists("ZPushAutodiscover")) {
 
 require_once('backend/zimbra/config.php');
 include_once('lib/default/diffbackend/diffbackend.php');
-include_once('include/mimeDecode.php');
-require_once('include/z_RFC822.php');
 include_once('lib/default/backend.php');
-include_once('backend/zimbra/z_RTF.php');
 require_once('backend/zimbra/mime.php');
 include_once('backend/zimbra/zimbraHttpStreamWrapper.php');
 
@@ -745,7 +673,7 @@ class BackendZimbra extends BackendDiff {
      * @return string       AS version constant
      */
     public function GetSupportedASVersion() {
-        return ZPush::ASV_14; 
+        return ZPush::ASV_141; 
     }
 
     /** Logon
@@ -772,7 +700,6 @@ class BackendZimbra extends BackendDiff {
             }
             $this->_protocolversion = Request::GetProtocolVersion();
             $this->_xFwdForForMailboxLog = Request::GetRemoteAddr();
-ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->Logon(): ' . "_xFwdForForMailboxLog ..." . $this->_xFwdForForMailboxLog);
         } else {
             $this->_ua = "Autodiscover";
             $this->_protocolversion = "N/A";
@@ -781,6 +708,7 @@ ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->Logon(): ' . "_xFwdForForMailboxLog ..." . 
         }
 
         ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->Logon(): ' . 'START Logon { username [' . $username . '] - domain [' . $domain . '] - password <hidden> - php ['.phpversion().'] - zpzb [' . $GLOBALS['revision'] .'] - ua ['.$this->_ua.'] - as ['.$this->_protocolversion.'] }' );
+        ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->Logon(): ' . '            { zimbra mailbox.log will report ua suffix [' . $this->_deviceIdForMailboxLog . '] and devIp [' . $this->_xFwdForForMailboxLog . '] }');
 
         $this->mainUser = $username;
  
@@ -1202,7 +1130,11 @@ ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->Logon(): ' . "_xFwdForForMailboxLog ..." . 
 
                     if (!$response) {
                         ZLog::Write(LOGLEVEL_ERROR, 'Zimbra->Logon(): ' . 'END Logon - Proxy Error { connected = false }');
-                        throw new ServiceUnavailableException("Access denied. Proxy unable to reach user mailbox server");
+                        if (isset($this->_soapError) && (($this->_soapError == "account.AUTH_FAILED") || ($this->_soapError == "service.AUTH_EXPIRED"))) {
+                            throw new AuthenticationRequiredException("Zimbra->SoapRequest(): Auth Error - Force client to reconnect.");
+                        } else {
+                            throw new ServiceUnavailableException("Access denied. Proxy unable to reach user mailbox server");
+                        }
                         return false;
                     }
 
@@ -1318,7 +1250,11 @@ ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->Logon(): ' . "_xFwdForForMailboxLog ..." . 
 
                     if (!$response) {
                         ZLog::Write(LOGLEVEL_ERROR, 'Zimbra->Logon(): ' . 'END Logon - Proxy Error { connected = false }');
-                        throw new ServiceUnavailableException("Access denied. Proxy unable to reach user mailbox server");
+                        if (isset($this->_soapError) && (($this->_soapError == "account.AUTH_FAILED") || ($this->_soapError == "service.AUTH_EXPIRED"))) {
+                            throw new AuthenticationRequiredException("Zimbra->SoapRequest(): Auth Error - Force client to reconnect.");
+                        } else {
+                            throw new ServiceUnavailableException("Access denied. Proxy unable to reach user mailbox server");
+                        }
                         return false;
                     }
 
@@ -1788,13 +1724,13 @@ ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->Logon(): ' . "_xFwdForForMailboxLog ..." . 
 $timezone = new DateTimeZone($this->_tz);
 $offset   = $timezone->getOffset(new DateTime);
 
-debugLog( "Offset =" . print_r( $offset, true ) );
+ZLog::Write(LOGLEVEL_DEBUG, "Offset =" . print_r( $offset, true ) );
 
 $endTime = time();
 $startTime = date_sub($endTime, date_interval_create_from_date_string('2 years'));
 $transitions = $timezone->getTransitions($startTime,$endTime);
-debugLog( "Transitions =" . print_r( $transitions, true ) , false );
-debugLog( "Transitions Slice=" . print_r(array_slice($transitions, 0, 3)));
+ZLog::Write(LOGLEVEL_DEBUG, "Transitions =" . print_r( $transitions, true ) , false );
+ZLog::Write(LOGLEVEL_DEBUG, "Transitions Slice=" . print_r(array_slice($transitions, 0, 3)));
 */
             unset( $subset );
             unset( $contents );
@@ -3960,7 +3896,7 @@ ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->ChangeFolder(): ' .  'OldID is set - Want t
                         // Find The Contact Type And Exclude Contact Groups
                         if (isset($items[$i]['_attrs']['type'])) {
                             if ($items[$i]['_attrs']['type'] == "group") {
-                                continue;
+                                continue 2;
                             }
                         }
                         break;
@@ -4523,7 +4459,7 @@ ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->GetMessage(): ' .  'Batch hasBodyTypes ['.p
 ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->GetMessage(): ' .  'Batch Size plain['.strlen($plain).'] html['.strlen($html).'] MIME['.$msg['s'].'] AttachmentCount ['.count($attachments).'] ', false );
 ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->GetMessage(): ' .  'Batch MSG ['.print_r($msg, true).'] ', false );
 */
-//debugLog( 'Zimbra->GetMessage(): ' .  'Batch MSG ['.print_r($msg, true).'] ', false );
+//ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->GetMessage(): ' .  'Batch MSG ['.print_r($msg, true).'] ', false );
 
                     $total = 0;
                     if (isset($msg['e'])) {
@@ -5725,16 +5661,16 @@ ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->GetMessage(): ' .  'Batch MSG ['.print_r($m
                             case 'SA': $bitmask += 64; break;
                         }
                         $mainApp->recurrence->dayofweek = $bitmask;
-//debugLog( "Set DayOfWeek=" . $mainApp->recurrence->dayofweek );
+//ZLog::Write(LOGLEVEL_DEBUG, "Set DayOfWeek=" . $mainApp->recurrence->dayofweek );
                     } elseif (isset($mainApp->recurrence) && ($mainApp->recurrence->type == 3) && !isset($mainApp->recurrence->weekofmonth) && !isset($mainApp->recurrence->dayofweek)) {
                         $dayofmonth = intval( date( "j", $mainApp->starttime) );
                         $mainApp->recurrence->type = 2;
                         $mainApp->recurrence->dayofmonth = $dayofmonth;
-//debugLog( "Set Type=" . $mainApp->recurrence->type . " & DayOfMonth=" . $mainApp->recurrence->dayofmonth);
+//ZLog::Write(LOGLEVEL_DEBUG, "Set Type=" . $mainApp->recurrence->type . " & DayOfMonth=" . $mainApp->recurrence->dayofmonth);
                     }
 
                     $output = $mainApp;
-//debugLog( "Appointment: " . print_r( $output, true), false );
+//ZLog::Write(LOGLEVEL_DEBUG, "Appointment: " . print_r( $output, true), false );
 
 					unset($mainApp);
 				}
@@ -5757,7 +5693,7 @@ ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->GetMessage(): ' .  'Batch MSG ['.print_r($m
  			        unset($response); // We never use it again
 
                     $item = $array['Body']['GetMsgResponse']['m'][0];
-//                    ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->GetMessage(): ' . 'TASK:' . print_r( $item, true ), false );
+                    ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->GetMessage(): ' . 'TASK:' . print_r( $item, true ), false );
 
                     unset($array);
 
@@ -5841,7 +5777,6 @@ ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->GetMessage(): ' .  'Batch MSG ['.print_r($m
                         }
                     }
 
-                    $output->datecompleted = "";
                     if(isset($item['inv'][0]['comp'][0]['status']) && $item['inv'][0]['comp'][0]['status'] == "COMP") {
                         $output->complete = 1;
                         // Zimbra doesn't store an actual DateCompleted for tasks - so use the date of last change
@@ -5853,11 +5788,6 @@ ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->GetMessage(): ' .  'Batch MSG ['.print_r($m
                     } else {
                         $output->complete = 0;
                     }
-
-                    $output->startdate = "";
-                    $output->utcstartdate = "";
-                    $output->duedate = "";
-                    $output->utcduedate = "";
 
                     if (isset($item['inv'][0]['comp'][0]['s'][0]['d'])) {
                         $startdate = substr( $item['inv'][0]['comp'][0]['s'][0]['d'], 0, 8);
@@ -5887,8 +5817,7 @@ ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->GetMessage(): ' .  'Batch MSG ['.print_r($m
                         $output->reminderset = "1";
                         $output->remindertime = $this->Date4ActiveSync($remindertime, $this->_tz);
                     } else {
-                        $output->reminderset = "";
-                        $output->remindertime = ""; 
+                        $output->reminderset = "0";
                     }
 
                     // Task Has Tags - Sync them as Categories to Client
@@ -7242,7 +7171,7 @@ ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->GetAllBodyRecursive(): ' .  'Inline Image ?
 
         // check if the message is in the current syncinterval
         if (($id != "") && (!$this->isZimbraObjectInSyncInterval($folderid, $id, $contentParameters)))
-            throw new StatusException(sprintf("Zimbra->DeleteMessage('%s'): Message is outside the sync interval and so far not deleted.", $id), SYNC_STATUS_OBJECTNOTFOUND);
+            throw new StatusException(sprintf("Zimbra->ChangeMessage('%s'): Message is outside the sync interval and so far not deleted.", $id), SYNC_STATUS_OBJECTNOTFOUND);
 
 
         // When Zimbra moves an item from a folder owned by one UserID to a folder owned by another UserID
@@ -7476,9 +7405,9 @@ ZLog::Write(LOGLEVEL_DEBUG, 'Supported Fields: '. print_r( $supportedFields, tru
                                } else if ((Request::GetProtocolVersion() < 12) && isset($input->body) && ($input->body != "")) {
                                     $notes = $input->body;
                                 } else if(isset($input->rtf)) {
-                                    if (class_exists('rtf', false)) {
+                                    if (class_exists('z_RTF', false)) {
                                         // start decode RTF if present
-                                        $rtf_body = new rtf ();
+                                        $rtf_body = new z_RTF();
                                         $rtf_body->loadrtf(base64_decode($input->rtf));
                                         $rtf_body->output("ascii");
                                         $rtf_body->parse();
@@ -7646,16 +7575,16 @@ ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->ChangeMessage(): ' .  'v has a comma' );
 
                     ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->ChangeMessage(): ' .  'Checking if changes mean exceptions need to be stripped ! ' );
                     if (isset($input->recurrence) && !isset($preModAppt->recurrence)) {
-                    ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->ChangeMessage(): ' .  'Input Appt: recurrence - does not exist on original ' );
+                        ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->ChangeMessage(): ' .  'Input Appt: recurrence - does not exist on original ' );
                         $zimbraStrippedExceptions = true;
                     } elseif (!isset($input->recurrence) && isset($preModAppt->recurrence)) {
-                    ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->ChangeMessage(): ' .  'Input Appt: no recurrence - Original does'  );
+                        ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->ChangeMessage(): ' .  'Input Appt: no recurrence - Original does'  );
                         $zimbraStrippedExceptions = true;
                     } elseif ($input->starttime != $preModAppt->starttime) {
-                    ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->ChangeMessage(): ' .  'Input Appt: starttime changed' );
+                        ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->ChangeMessage(): ' .  'Input Appt: starttime changed' );
                         $zimbraStrippedExceptions = true;
                     } elseif ($input->endtime != $preModAppt->endtime) {
-                    ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->ChangeMessage(): ' .  'Input Appt: endtime changed' );
+                        ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->ChangeMessage(): ' .  'Input Appt: endtime changed' );
                         $zimbraStrippedExceptions = true;
                     }
 					
@@ -7669,11 +7598,29 @@ ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->ChangeMessage(): ' .  'v has a comma' );
                             $input->recurrence->occurrences = $preModAppt->recurrence->occurrences;
                         }
 
+                        if (isset($input->recurrence->until) && isset($preModAppt->recurrence->until) && ($input->recurrence->until != $preModAppt->recurrence->until)) {
+                            ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->ChangeMessage(): ' .  'Input Appt: recurrence exists on both - until values differ ' );
+
+                            // Outlook sends the Appt end time instead of the Appt start time. If the difference is less than a day use the zimbra value to avoid breaking the comparison
+                            if (abs(intval($input->recurrence->until) - intval($preModAppt->recurrence->until)) < 86400) {
+                                ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->ChangeMessage(): ' .  'Input Appt: recurrence until values differ by less than a day - replacing input value with zimbra value' );
+                                $input->recurrence->until = $preModAppt->recurrence->until;
+                            }
+                        }
+
                         if (!isset($input->recurrence->interval) && isset($preModAppt->recurrence->interval) && ($preModAppt->recurrence->interval == 1)) {
                             ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->ChangeMessage(): ' .  'Input Appt: recurrence exists on both - Interval OMITTED on input but set to 1 on preModAppt - Adding interval = 1 to input to avoid stripping exceptions ' );
 
                             // Some devices do not supply the default (1) value for interval
                             $input->recurrence->interval = $preModAppt->recurrence->interval;
+                        }
+
+                        if (isset($input->recurrence->firstdayofweek) && !isset($preModAppt->recurrence->firstdayofweek)) {
+                            ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->ChangeMessage(): ' .  'Input Appt: recurrence exists on both - FirstDayOfWeek OMITTED on preModAppt but set on input - Adding firstdayofweek = input value to preModAppt to avoid stripping exceptions ' );
+
+                            // Sometimes? Zimbra does not supply a value for firstdayofweek
+                            // Currently this field is not processed by the backend so making them the same to avoid breaking the comparison
+                            $preModAppt->recurrence->firstdayofweek = $input->recurrence->firstdayofweek;
                         }
 
                         if (isset($input->recurrence->interval) && isset($preModAppt->recurrence->interval) && ($input->recurrence->interval == $preModAppt->recurrence->interval)) {
@@ -7708,6 +7655,12 @@ ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->ChangeMessage(): ' .  'v has a comma' );
                             }
                         }
 
+                        if (!isset($input->recurrence->until) && isset($preModAppt->recurrence->until)) {
+                            // Android not sending back time in Until field, it just sends the date - hack to fix it by keeping the original Until time. This avoids zimbra stripping the exceptions. 
+                            ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->ChangeMessage(): ' .  'Input Appt: recurrence exists on both - Until date not suplied on input - Keep original ' );
+                            $input->recurrence->until = $preModAppt->recurrence->until;
+                        }
+
                         if (isset($input->recurrence->type) && isset($preModAppt->recurrence->type) && ($input->recurrence->type == 1) && ($preModAppt->recurrence->type == 1) && isset($preModAppt->recurrence->premodtype) && ($preModAppt->recurrence->premodtype == 0)) {
                             // Override type back to 0 to match zimbra original. This is to avoid stripping exceptions
                             ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->ChangeMessage(): ' .  'Input Appt: recurrence type 1 whereas ZIMRA original appointment is DAI (type 0) - Replacing input type with preModAppt->premodtype (0) ' );
@@ -7716,13 +7669,14 @@ ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->ChangeMessage(): ' .  'v has a comma' );
                             // $preModAppt->recurrence->premodtype is no longer needed - remove it to prevent breaking the comparison
                             unset( $preModAppt->recurrence->premodtype );
                         }
-if (is_string($input->recurrence->occurrences)) { ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->ChangeMessage(): ' . 'Input->recurrence->occurrences is a STRING'); }
-if (is_integer($input->recurrence->occurrences)) { ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->ChangeMessage(): ' . 'Input->recurrence->occurrences is an INTEGER'); }
-if (is_string($preModAppt->recurrence->occurrences)) { ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->ChangeMessage(): ' . 'preModAppt->recurrence->occurrences is a STRING'); }
-if (is_integer($preModAppt->recurrence->occurrences)) { ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->ChangeMessage(): ' . 'preModAppt->recurrence->occurrences is an INTEGER'); }
+
+                        if (is_string($input->recurrence->occurrences)) { ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->ChangeMessage(): ' . 'Input->recurrence->occurrences is a STRING'); }
+                        if (is_integer($input->recurrence->occurrences)) { ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->ChangeMessage(): ' . 'Input->recurrence->occurrences is an INTEGER'); }
+                        if (is_string($preModAppt->recurrence->occurrences)) { ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->ChangeMessage(): ' . 'preModAppt->recurrence->occurrences is a STRING'); }
+                        if (is_integer($preModAppt->recurrence->occurrences)) { ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->ChangeMessage(): ' . 'preModAppt->recurrence->occurrences is an INTEGER'); }
 
                     }
-                    if (isset($input->recurrence) && !$input->recurrence->equals( $preModAppt->recurrence )) {
+                    if (isset($input->recurrence) && isset($preModAppt->recurrence) && !$input->recurrence->equals( $preModAppt->recurrence )) {
                         ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->ChangeMessage(): ' .  'Input Appt: recurrence changed' );
                         $zimbraStrippedExceptions = true;
                     }
@@ -7755,17 +7709,16 @@ if (is_integer($preModAppt->recurrence->occurrences)) { ZLog::Write(LOGLEVEL_DEB
                             $timezone_abbreviations = timezone_abbreviations_list();
                             $possibleMatches = array();
 
-                            while ($region = each($timezone_abbreviations) ) {
-
-                                $count = sizeof($region['value']);
+                            foreach ($timezone_abbreviations as $name=>$region) {
+                                $count = sizeof($region);
                                 for ($i=0;$i < $count;$i++) {
-                                    $tzListItem = $region['value'][$i];
+                                    $tzListItem = $region[$i];
                                     if (($tzListItem['dst'] === false) && ( $tzListItem['offset'] == $stdoffset )) {
                                         $possibleMatches[$tzListItem['timezone_id']]['std'] = 1; 
                                     }
                                 }
                                 for ($i=0;$i < $count;$i++) {
-                                    $tzListItem = $region['value'][$i];
+                                    $tzListItem = $region[$i];
                                     if (($tzListItem['dst'] === true) && ( $tzListItem['offset'] == $dstoffset )) {
                                         if (in_array( $tzListItem['timezone_id'], $possibleMatches )) {
                                             $possibleMatches[$tzListItem['timezone_id']]['dst'] = 1; 
@@ -8131,9 +8084,9 @@ if (is_integer($preModAppt->recurrence->occurrences)) { ZLog::Write(LOGLEVEL_DEB
                 } else if ((Request::GetProtocolVersion() < 12) && isset($input->body) && ($input->body != "")) {
                     $notes = $input->body;
                 } else if(isset($input->rtf)) {
-                    if (class_exists('rtf', false)) {
+                    if (class_exists('z_RTF', false)) {
                         // start decode RTF if present
-                        $rtf_body = new rtf ();
+                        $rtf_body = new z_RTF();
                         $rtf_body->loadrtf(base64_decode($input->rtf));
                         $rtf_body->output("ascii");
                         $rtf_body->parse();
@@ -8526,9 +8479,9 @@ ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->ChangeMessage(): Both have asbody->data and
                                     } else if ((Request::GetProtocolVersion() < 12) && isset($except->body) && ($except->body != "")) {
                                         $notes = $except->body;
                                     } else if(isset($except->rtf)) {
-                                        if (class_exists('rtf', false)) {
+                                        if (class_exists('z_RTF', false)) {
                                             // start decode RTF if present
-                                            $rtf_body = new rtf ();
+                                            $rtf_body = new z_RTF();
                                             $rtf_body->loadrtf(base64_decode($except->rtf));
                                             $rtf_body->output("ascii");
                                             $rtf_body->parse();
@@ -8815,9 +8768,9 @@ ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->ChangeMessage(): Both have asbody->data and
                             } else if ((Request::GetProtocolVersion() < 12) && isset($except->body) && ($except->body != "")) {
                                 $notes = $except->body;
                             } else if(isset($except->rtf)) {
-                                if (class_exists('rtf', false)) {
+                                if (class_exists('z_RTF', false)) {
                                     // start decode RTF if present
-                                    $rtf_body = new rtf ();
+                                    $rtf_body = new z_RTF();
                                     $rtf_body->loadrtf(base64_decode($except->rtf));
                                     $rtf_body->output("ascii");
                                     $rtf_body->parse();
@@ -9121,9 +9074,9 @@ ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->ChangeMessage(): Both have asbody->data and
                 } else if ((Request::GetProtocolVersion() < 12) && isset($input->body) && ($input->body != "")) {
                     $notes = $input->body;
                 } else if(isset($input->rtf)) {
-                    if (class_exists('rtf', false)) {
+                    if (class_exists('z_RTF', false)) {
                         // start decode RTF if present
-                        $rtf_body = new rtf ();
+                        $rtf_body = new z_RTF();
                         $rtf_body->loadrtf(base64_decode($input->rtf));
                         $rtf_body->output("ascii");
                         $rtf_body->parse();
@@ -9278,9 +9231,9 @@ ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->ChangeMessage(): Both have asbody->data and
                 } else if ((Request::GetProtocolVersion() < 12) && isset($input->body) && ($input->body != "")) {
                     $notes = $input->body;
                 } else if(isset($input->rtf)) {
-                    if (class_exists('rtf', false)) {
+                    if (class_exists('z_RTF', false)) {
                         // start decode RTF if present
-                        $rtf_body = new rtf ();
+                        $rtf_body = new z_RTF();
                         $rtf_body->loadrtf(base64_decode($input->rtf));
                         $rtf_body->output("ascii");
                         $rtf_body->parse();
@@ -9489,7 +9442,7 @@ ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->SetMessageFlag(): ' .  'Setting Flag' );
 
         // check if the message is in the current syncinterval
         if (!$this->isZimbraObjectInSyncInterval($folderid, $id, $contentParameters))
-            throw new StatusException(sprintf("Zimbra->DeleteMessage('%s'): Message is outside the sync interval and so far not deleted.", $id), SYNC_STATUS_OBJECTNOTFOUND);
+            throw new StatusException(sprintf("Zimbra->MoveMessage('%s'): Message is outside the sync interval and so far not deleted.", $id), SYNC_STATUS_OBJECTNOTFOUND);
 
         $index = $this->GetFolderIndex($folderid);
         $view = $this->_folders[$index]->view;
@@ -9577,7 +9530,7 @@ ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->SetMessageFlag(): ' .  'Setting Flag' );
                     }
 
                     $preModAppt = $this->GetMessage($folderid, $id, $contentParameters); 
-//                    ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->DeleteMessage(): ' .  'GetApptReq Original Appt: ' . print_r( $preModAppt, true ), false );
+//                    ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->MoveMessage(): ' .  'GetApptReq Original Appt: ' . print_r( $preModAppt, true ), false );
 
                     if ($preModAppt->isorganizer == 1) {
                         $invId = $preModAppt->zimbraInvId;
@@ -9655,9 +9608,24 @@ ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->SetMessageFlag(): ' .  'Setting Flag' );
      *
      */
     public function DeleteMessage($folderid, $id, $contentParameters) {
-        ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->DeleteMessage(): ' . 'START DeleteMessage { folderid = ' . $folderid . '; id = ' . $id . '; contentParameters = ' . print_r( $contentParameters, true ) . ' }');
+        ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->DeleteMessage(): ' . 'START DeleteMessage { folderid = ' . $folderid . '; id = ' . $id . '; contentParameters = OBJECT }');
 
-
+        // z-push should already make a decision to use MoveMessage or DeleteMessage based on the ActiveSync attribute DeletesAsMoves
+        // Most zimbra users have an expectation that Delete will always use the Trash folder and this has been the case for the 
+        // ZimbraBackend too. To allow overriding that behaviour where the client has requested a Deletion a new setting was added.
+        // If ZIMBRA_DELETESASMOVES is defined, and set to false, then Delete instead of moving to trash
+        if (defined('ZIMBRA_DELETESASMOVES') and (ZIMBRA_DELETESASMOVES === false)) {
+            ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->DeleteMessage(): ' . 'ZIMBRA_DELETESASMOVES is set to false so deleted item will NOT move to Trash');
+            $op = 'delete';
+        } else {
+            // if the current folder is Trash then Delete
+            if ($folderid == $this->_wasteID) {
+                $op = 'delete';
+            } else {
+                $op = 'trash';
+            }
+        }
+		
         if ($this->_localCache) {
             ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->DeleteMessage(): ' .  'DeleteMessage - CLEARING CACHE for folder ['.$folderid.']'  );
             unset($this->_cachedMessageLists[$folderid]);
@@ -9673,36 +9641,25 @@ ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->SetMessageFlag(): ' .  'Setting Flag' );
 
         switch ($view) {
             case 'message':
-                if ($folderid == $this->_wasteID) {
-                    $soap = '<MsgActionRequest xmlns="urn:zimbraMail">
-                                <action id="' . $id . '" op="delete"/>
-                            </MsgActionRequest>';
-                    $section = 'MsgActionResponse';
-                    $op = 'delete';
-                } else {
-                    $soap = '<MsgActionRequest xmlns="urn:zimbraMail">
-                                <action id="' . $id . '" op="trash"/>
-                            </MsgActionRequest>';
-                    $section = 'MsgActionResponse';
-                    $op = 'trash';
-                }
+                $soap = '<MsgActionRequest xmlns="urn:zimbraMail">
+                            <action id="' . $id . '" op="' . $op . '"/>
+                        </MsgActionRequest>';
+                $section = 'MsgActionResponse';
                 break;
 
             case 'contact':
                 $soap = '<ContactActionRequest xmlns="urn:zimbraMail">
-                            <action id="'.$id.'" op="trash"/>
+                            <action id="'.$id.'" op="' . $op . '"/>
                         </ContactActionRequest>';
                 $section = 'ContactActionResponse';
-                $op = 'trash';
                 break;
 
             case 'appointment':
 
                 $soap = '<ItemActionRequest xmlns="urn:zimbraMail">
-                            <action id="'.$id.'" op="trash"/>
+                            <action id="'.$id.'" op="' . $op . '"/>
                         </ItemActionRequest>';
                 $section = 'ItemActionResponse';
-                $op = 'trash';
 
                 if (!$contentParameters) {
                     // For z-push 2 releases 2.0.7 and earlier Content Parameters are not being set before the call to ChangeMessage
@@ -9720,6 +9677,7 @@ ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->SetMessageFlag(): ' .  'Setting Flag' );
                 $preModAppt = $this->GetMessage($folderid, $id, $contentParameters); 
 //                ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->DeleteMessage(): ' .  'GetApptReq Original Appt: ' . print_r( $preModAppt, true ), false );
 
+                // If user is the organizer of the meeting they must Cancel it rather than just delete/move it.
                 if ($preModAppt->isorganizer == 1) {
                     $invId = $preModAppt->zimbraInvId;
 
@@ -9753,10 +9711,9 @@ ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->SetMessageFlag(): ' .  'Setting Flag' );
             case 'task':
             case 'note':
                 $soap = '<ItemActionRequest xmlns="urn:zimbraMail">
-                            <action id="'.$id.'" op="trash"/>
+                            <action id="'.$id.'" op="' . $op . '"/>
                         </ItemActionRequest>';
                 $section = 'ItemActionResponse';
-                $op = 'trash';
                 break;
         }
 
@@ -9771,7 +9728,11 @@ ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->SetMessageFlag(): ' .  'Setting Flag' );
                     ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->DeleteMessage(): ' . 'END DeleteMessage / CancelAppointmentRequest { true }');
                     return true;
                 } elseif (isset($array['Body'][$section]['action']['op']) && ($array['Body'][$section]['action']['op'] == $op)) {
-                    ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->DeleteMessage(): ' . 'END DeleteMessage { true }');
+                    if ($op == "trash") {
+                        ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->DeleteMessage(): ' . 'END DeleteMessage / Moved to Trash { true }');
+                    } else {
+                        ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->DeleteMessage(): ' . 'END DeleteMessage / DELETED { true }');
+                    }
                     return true;
                 } else {
                     ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->DeleteMessage(): ' . 'END DeleteMessage { false }');
@@ -10986,7 +10947,7 @@ ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->ResolveRecipients(): ' .  'Maxcerts ['.$max
     public function SendMail($syncsm) {
         ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->SendMail(): ' . 'START SendMail { $syncsm = (excluded); }');
 
-//ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->SendMail(): ' .  'SyncSm ['.print_r( $syncsm, true ).']' );
+ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->SendMail(): ' .  'SyncSm ['.print_r( $syncsm, true ).']' );
 
 /*
 class SyncSendMail extends SyncObject {
@@ -11007,17 +10968,24 @@ class SyncSendMailSource extends SyncObject {
     public $instanceid;
 */
 
+		$folderid = false;
 		$forward = false;
 		$reply = false;
         $saveinsent = false;
         $replaceMIME = false;
 
+        if (isset($syncsm->source->folderid)) {
+            ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->SendMail(): ' .  'Folder of Original [' . $folderid .']' );
+            $folderid = $syncsm->source->folderid;
+        }
         if (isset($syncsm->replyflag)) {
             ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->SendMail(): ' .  'Reply flag is SET' );
             $reply = $syncsm->source->itemid;
+            ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->SendMail(): ' .  'Reply to Item [' . $reply . ']' );
         } elseif (isset($syncsm->forwardflag)) {
             ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->SendMail(): ' .  'Forward flag is SET' );
             $forward = $syncsm->source->itemid;
+            ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->SendMail(): ' .  'Forward Item [' . $forward . ']' );
 		}
 
         if (isset($syncsm->saveinsent)) {
@@ -11190,7 +11158,14 @@ ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->SendMail(): ' .  'Plain-AS-HTML ['.$textash
 
                 ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->SendMail(): ' . 'Grabbing the Original' );
 
-                $folderid = false;
+                // 20200922 - Code added to prepend folder owner to original for item from shared folder
+				//            This is a workaround for a z-push issue https://forum.kopano.io/topic/3378/smartforward-itemid-in-composemail-object-is-changed
+                $index = $this->GetFolderIndex($folderid);
+                if ($this->_folders[$index]->linkid != '') {
+                    $ownerFolder = explode( ":", $this->_folders[$index]->linkid);
+                    $original = $ownerFolder[0] . ":" . $original;
+                }
+
                 $needHtml = true;
                 $needPlain = true;
                 $orig_calendar = "";
@@ -11506,7 +11481,7 @@ ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->SendMail(): ' .  'Plain-AS-HTML ['.$textash
             $array = json_decode($response, true);
             unset($response);
             $calendarid = '';
-//			debugLog( 'INVITE-REPLY-RESPONSE:' . print_r( $array, true), false );
+//			ZLog::Write(LOGLEVEL_DEBUG, 'INVITE-REPLY-RESPONSE:' . print_r( $array, true), false );
 
             $status = ((($verb != "DECLINE") && isset($array['Body']['SendInviteReplyResponse']['calItemId'])) || (($verb == "DECLINE") && isset($array['Body']['SendInviteReplyResponse'])));
             if ($status == true) {
@@ -11539,7 +11514,7 @@ ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->SendMail(): ' .  'Plain-AS-HTML ['.$textash
                 ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->MeetingResponse(): ' . 'END MeetingResponse ['.$verb.'] - calendarID ['.$calendarid.'] { true }');
                 return $calendarid;
             }
-			debugLog( 'INVITE-REPLY-RESPONSE:' . print_r( $array, true), false );
+ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->MeetingResponse(): INVITE-REPLY-RESPONSE:' . print_r( $array, true), false );
             unset($array);
         }
 
@@ -11974,15 +11949,27 @@ ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->SendMail(): ' .  'Plain-AS-HTML ['.$textash
                 }
             }
             $this->_soapError = $this->ExtractErrorCode($response,$returnJSON);
+			$waitSetError = ( "mail.NO_SUCH_WAITSET" == $this->_soapError);
             $this->error = 'SOAP FAULT: Error Code   ['.$this->_soapError.'] ';
-            ZLog::Write(LOGLEVEL_ERROR, 'Zimbra->SoapRequest(): ' . $this->error);
+			if ($waitSetError) {
+                ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->SoapRequest(): ' . $this->error);
+            } else {
+                ZLog::Write(LOGLEVEL_ERROR, 'Zimbra->SoapRequest(): ' . $this->error);
+            }
             $errorReason = $this->ExtractErrorReason($response,$returnJSON);
             $this->error = 'SOAP FAULT: Error Reason ['.$errorReason.'] ';
-            ZLog::Write(LOGLEVEL_ERROR, 'Zimbra->SoapRequest(): ' . $this->error);
+			if ($waitSetError) {
+                ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->SoapRequest(): ' . $this->error);
+            } else {
+                ZLog::Write(LOGLEVEL_ERROR, 'Zimbra->SoapRequest(): ' . $this->error);
+            }
             $response = false;
             if ($this->_soapError == "service.AUTH_EXPIRED") {
-                ZLog::Write(LOGLEVEL_ERROR, 'Zimbra->SoapRequest(): ' . 'zimbra Auth Token has expired - Throw SYNC_COMMONSTATUS_SERVERERROR to force a new connection/re-auth' );
-                throw new StatusException("Zimbra->SoapRequest(): Auth Token Expired - Force client to reconnect.", SYNC_COMMONSTATUS_SERVERERROR);
+                ZLog::Write(LOGLEVEL_ERROR, 'Zimbra->SoapRequest(): ' . 'zimbra Auth Token has expired - Throw AuthenticationRequiredException to force a new connection/re-auth' );
+                throw new AuthenticationRequiredException("Zimbra->SoapRequest(): Auth Token Expired - Force client to reconnect.");
+            } elseif ($this->_soapError == "account.AUTH_FAILED") {
+                ZLog::Write(LOGLEVEL_ERROR, 'Zimbra->SoapRequest(): ' . 'zimbra Auth Failed - Throw AuthenticationRequiredException to force a new connection/re-auth' );
+                throw new AuthenticationRequiredException("Zimbra->SoapRequest(): Auth Failed - Force client to reconnect.");
             } elseif ($this->_soapError == "service.PERM_DENIED") {
                 ZLog::Write(LOGLEVEL_ERROR, 'Zimbra->SoapRequest(): ' . 'SOAP Message: '.$soap_message_debug);
                 ZLog::Write(LOGLEVEL_ERROR, 'Zimbra->SoapRequest(): ' . 'SOAP Response: '.$response, false);
@@ -12432,7 +12419,7 @@ ZLog::Write(LOGLEVEL_DEBUG, 'Zimbra->ExtractHtmlErrorTitle(): ' . 'errorTitle ['
         $response = $this->SoapRequest($soap, false, false, $returnJSON);
         if($response) {
             $array = json_decode($response, true);
-//			debugLog( 'ITEM:' . print_r( $array, true), false );
+//			ZLog::Write(LOGLEVEL_DEBUG, 'ITEM:' . print_r( $array, true), false );
             unset($response);
 
             if (isset($array['Body']['GetItemResponse']['appt'][0]['inv'][0]['id'])) {

@@ -1,6 +1,6 @@
-==============  Z-Push-2 Zimbra Backend - Installation Notes - Release 69  ==============
+==============  Z-Push-2 Zimbra Backend - Installation Notes - Release 71  ==============
 
-**  RELEASE 69 is designed to work with Z-Push 2.5 or later  **
+**  RELEASE 71 is designed to work with Z-Push 2.5 or later  **
 
 Z-PUSH 2.5.x is now stable - but is still under development - There is still the possibility 
 that updates to Z-PUSH will break things in the ZIMBRA backend from time to time. Any
@@ -13,6 +13,14 @@ SHOW YOUR APPRECIATION
 If you would like to show your appreciation for the work that goes into this zimbra backend
 please send a donation via 
 https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=7X94XCP9A5ZYG&lc=IE&currency_code=EUR&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted
+
+
+New For Release 71 and later. A new config file flag ZIMBRA_DELETESASMOVES was added that
+allows the default behaviour of zimbra (always send deleted stuff to trash) to be overridden
+such that the flag sent by the client will be honoured instead. Please manually add this new
+setting to your config.php file if you wish to use it. Also, as the zimbra backend local
+copy of z_RTF.php is no longer used, the latest version of zpzb-install.sh script will rename
+it. So, please download and use the latest script.
 
 
 New For Release 65 and later. A bash shell script is being provided to simplify the basic deployment
@@ -281,6 +289,17 @@ check free/busy times when creating appointments amongst others.
 *                   decision based on the client being Apple or not. 
 *                   (Note: With SmartFolders this setting can be overridden per device - see below)
 *                   define('ZIMBRA_SERVER_INVITE_REPLY', true);
+*
+*
+*                   === To Force Bypassing the Trash Folder for Deletions ===
+*                   By default the zimbra client uses the Trash folder for deletions of mail messages,  
+*                   tasks and contacts. This has always been the same in the ZimbraBackend for consistency.
+*                   For those that would prefer to control the use of the Trash folder from their client a
+*                   new setting ZIMBRA_DELETESASMOVES has been added that can be used to override the 
+*                   default behaviour. The default for this setting is true which means it will move items 
+*                   to the Trash folder when they are deleted on the client. To bypass the Trash folder and
+*                   delete them immediately simply uncomment the next line and set it to false.
+*                   define('ZIMBRA_DELETESASMOVES', false);
 *
 *
 * Feature Disable:  Several users have asked over time if it is possible to turn off Email sync or

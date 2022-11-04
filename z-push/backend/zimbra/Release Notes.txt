@@ -1,11 +1,11 @@
-==============  Z-Push Zimbra Backend - Release Notes - Release 69 ==============
+==============  Z-Push Zimbra Backend - Release Notes - Release 71 ==============
 
-THESE RELEASE NOTES ARE FOR RELEASE 69 CHANGES 
+THESE RELEASE NOTES ARE FOR RELEASE 71 CHANGES 
 
-**  RELEASE 69 is designed to work with Z-Push 2.4 or later **
+**  RELEASE 71 is designed to work with Z-Push 2.5 or later **
 
-PLEASE READ THESE RELEASE NOTES COMPLETELY BEFORE IMPLEMENTING RELEASE 69
-NOTE THAT THE RELEASE NOTES FOR 37-68 ARE ALSO CONTAINED BELOW AND SHOULD 
+PLEASE READ THESE RELEASE NOTES COMPLETELY BEFORE IMPLEMENTING RELEASE 70
+NOTE THAT THE RELEASE NOTES FOR 37-70 ARE ALSO CONTAINED BELOW AND SHOULD 
 ALSO BE READ FULLY WHEN UPGRADING FROM A RELEASE 48 OR EARLIER.
 THIS IS EXPECIALLY CRITICAL IF YOU ARE TURNING ON ANY OF THE NEW FEATURES
 AND ARE UPGRADING AN EXISTING INSTALLATION FROM RELEASE 48 OR EARLIER. 
@@ -16,6 +16,14 @@ If you would like to show your appreciation for the work that goes into this zim
 please send a donation via 
 https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=7X94XCP9A5ZYG&lc=IE&currency_code=EUR&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted
 
+
+
+New For Release 71 and later. A new config file flag ZIMBRA_DELETESASMOVES was added that
+allows the default behaviour of zimbra (always send deleted stuff to trash) to be overridden
+such that the flag sent by the client will be honoured instead. Please manually add this new
+setting to your config.php file if you wish to use it.  Also, as the zimbra backend local
+copy of z_RTF.php is no longer used, the latest version of zpzb-install.sh script will rename
+it. So, please download and use the latest script.
 
 
 NEW For Release 63 and later. The code to recognise the UserAgent of various devices and to
@@ -74,6 +82,136 @@ to the final (contentParameters) parameter. The function headers should look lik
     public function MoveMessage($folderid, $id, $newfolderid, $contentParameters=false) {
     public function SetReadFlag($folderid, $id, $flags, $contentParameters=false) {
 Use a text editor to search for each of the functions in turn, and add the =false as shown.
+
+
+
+Changes Made To Revision 71: z-push-2 version ONLY
+ - Removed zimbra specific version of include file z_RTF.php
+ - Don't output "" for empty Task dates and reminderset
+ - Changed mail.NO_SUCH_WAITSET to LOGLEVEL_DEBUG
+ - Replaced all references to debugLog with ZLog::Write(LOGLEVEL_DEBUG,
+ - New override setting ZIMBRA_DELETESASMOVES added
+ - Mail_Mime files mime.php and mimepart.php updated to release 1.10.10
+ - Don't fail recurrence comparison on firstdayofweek value 
+ - Don't fail recurrence comparison on until value if less than a day differece 
+ - Don't fail recurrence comparison on until value if not present in input 
+ - Removed use of each() in timezone matching for PHP 8 compatability
+
+ 
+Removed zimbra specific version of include file z_RTF.php
+=========================================================
+Removed zimbra specific version of include file z_RTF.php that is now included in the 
+base z-push packages. The z-push version has been enhanced.
+
+
+Don't output "" for empty Task dates and reminderset
+====================================================
+Don't output "" for empty Task dates and reminderset. The empty space values were causing
+the z-push integrity checker to throw up errors. Changed reminderset to return 0 and 
+removed setting of default empty string values for date completed, startdate, utcstartdate,
+duedate, utcduedate
+
+
+Changed reporting of error mail.NO_SUCH_WAITSET to LOGLEVEL_DEBUG
+=================================================================
+Changed reporting of error mail.NO_SUCH_WAITSET to LOGLEVEL_DEBUG as it can occur normally 
+when syncing. This will prevent it flooding the z-push-error.log file. It will still show 
+in the z-push.log and special log files at LOGLEVEL_DEBUG or higher
+
+
+Replaced all references to debugLog with ZLog::Write(LOGLEVEL_DEBUG,
+====================================================================
+Replaced all references to debugLog with ZLog::Write(LOGLEVEL_DEBUG, as the old function
+no longer exists
+
+
+New override setting ZIMBRA_DELETESASMOVES added
+================================================
+New override setting ZIMBRA_DELETESASMOVES added to allow the administrator to force
+bypassing the Trash folder for Deletions. By default the zimbra client uses the Trash 
+folder for deletions of mail messages, tasks and contacts. This has always been the same 
+in the ZimbraBackend for consistency. For those that would prefer to control the use of 
+the Trash folder from their client a new setting ZIMBRA_DELETESASMOVES has been added 
+that can be used to override the default behaviour. The default for this setting is true 
+which means it will move items to the Trash folder when they are deleted on the client. 
+To bypass the Trash folder and delete them immediately simply uncomment the following 
+line in the zimbra backend config.php file and set it to false. BEWARE that it is a 
+system-wide setting that will affect ALL users.
+define('ZIMBRA_DELETESASMOVES', false);
+
+
+Mail_Mime files mime.php and mimepart.php updated to release 1.10.10
+====================================================================
+Mail_Mime files mime.php and mimepart.php updated to release 1.10.10 for bug fixes and
+to remove old debugLog calls. No changes to ZimbraBackend use of them made at this time.
+
+
+Don't fail recurrence comparison on firstdayofweek value 
+========================================================
+Don't fail recurrence comparison on firstdayofweek value as zimbra typically does not 
+store it or return it for recurrences. the zimbra backend does not use this value at
+present so set the zimbra firstdayofweek value to match the input one so the 
+comparison does not break. After the comparison is done the value is dropped - it does 
+not get stored in zimbra.
+
+ 
+Don't fail recurrence comparison on until value if less than a day differece 
+============================================================================
+Don't fail recurrence comparison on until value if less than a day difference as zimbra
+typically stores the starttime of the last appointment in the sequence in until whereas 
+Apple and possibly other clients will send the endtime of the appointment. Assign the 
+current zimbra until to input until so the comparison does not break. 
+
+
+Don't fail recurrence comparison on until value if not present in input 
+=======================================================================
+Don't fail recurrence comparison on until value if not present in input as a never 
+ending recurrence created on Apple will have until empty whereas zimbra will have set
+an arbitrary end date 10years and a few days out. Assign the current zimbra until to
+input until so the comparison does not break.
+
+
+Removed use of each() in timezone matching for PHP 8 compatibility
+==================================================================
+Removed use of each() in timezone matching for PHP 8 compatibility. Thanks to Soner
+for pointing out the issue https://sourceforge.net/p/zimbrabackend/feature-requests/27/
+Note: the z_RTF.php issues listed are no longer relevant due to the removal of the
+zimbra backend version of this file - see first change in this release. 
+
+
+
+Changes Made To Revision 70: z-push-2 version ONLY
+ - Workaround Z-Push issue in SmartForward/SmartReply from shared folder
+ - Add 2 to continue statement in GetNextMessageBlock for Contacts
+ - Throw AuthenticationRequiredException for AUTH failures
+
+
+Workaround Z-Push issue in SmartForward/SmartReply from shared folder
+=====================================================================
+Z-Push has logic that splits the itemId on a ":" in SmartForward/SmartReply and only 
+returns the part after the ":" as the itemId. This is based on the fact that Exchange/
+Kopano use folderId:itemId as a long form identifer for an item, and the folderId is
+already being passed as a separate field. For zimbra this does not work if the item is
+from a shared folder, as the itemId from zimbra will be userGuid:itemId, and when they
+split the itemId and only return the latter part, this itemId no longer has any
+reference back to the owner. The workaround added is to check if the folderId is for a
+shared folder and, if it is, to extract the folder owner's userGuid from the folder 
+link and to prepend "<userGuid>:" to the itemId. Issue first reported at
+https://sourceforge.net/p/zimbrabackend/support-requests/181/
+
+
+Add 2 to continue statement in GetNextMessageBlock for Contacts
+===============================================================
+Add 2 to continue statement in GetNextMessageBlock for Contacts to correctly skip the 
+remainder of the loop, and to avoid generating warnings with PHP 7.3 and later. Issue
+first reported at https://sourceforge.net/p/zimbrabackend/bugs/90/
+
+
+Throw AuthenticationRequiredException for AUTH failures
+=======================================================
+Throw AuthenticationRequiredException for AUTH failures to allow clients to recognized
+the need to re-authenticate. Throwing this exception results in a HTTP 401 response
+being returned to the client. Prior to this it was returning a generic Server Error.
 
 
 
