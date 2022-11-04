@@ -1,7 +1,7 @@
 # zcs-zpush
 This repository is source for integrating Zimbra Single Server and Z-Push + Zimbra Backend to achieve ActiveSync on Zimbra OSE.
 
-# Integrating Zimbra and Z-push 2.5.1 with zimbrabackend69 on Ubuntu 18.04 and Zimbra 8.8.15+
+# Integrating Zimbra and Z-push 2.5.1 with zimbrabackend71 on Ubuntu 18.04 and Zimbra 8.8.15+
 
 Install dependecies
 
